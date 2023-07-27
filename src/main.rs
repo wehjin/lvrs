@@ -16,6 +16,12 @@ async fn index_js() -> impl Responder {
 	HttpResponse::Ok().body(s)
 }
 
+#[get("/index.js.map")]
+async fn index_js_map() -> impl Responder {
+	let s = include_str!("index.js.map");
+	HttpResponse::Ok().body(s)
+}
+
 #[post("/echo")]
 async fn echo(req_body: String) -> impl Responder {
 	HttpResponse::Ok().body(req_body)
@@ -31,6 +37,7 @@ async fn main() -> std::io::Result<()> {
 		let app = App::new()
 			.service(hello)
 			.service(index_js)
+			.service(index_js_map)
 			.service(echo)
 			.route("/hey", web::get().to(manual_hello))
 			.route("/live/websocket", web::get().to(ws_index));
