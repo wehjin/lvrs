@@ -1,11 +1,21 @@
-use actix::{Actor, StreamHandler};
-use actix_web::{HttpRequest, HttpResponse, web};
+use std::collections::HashMap;
+use std::ops::Not;
+use actix::{Actor, ActorContext, StreamHandler};
 use actix_web_actors::ws;
+use crate::app::AppKey;
+use crate::lv::phx::PhxMsgType;
 use serde_json::Value;
-use crate::lv::app::websocket::phx::PhxMsgType;
+use crate::lv;
 
-struct MyWs {
-	using_emoji: bool,
+pub(crate) struct MyWs {
+	assigns: HashMap<AppKey, lv::Value>,
+}
+
+impl MyWs {
+	pub fn new() -> Self {
+		let assigns = vec![(AppKey::UsingEmoji, lv::Value::from(true))].into_iter().collect();
+		MyWs { assigns }
+	}
 }
 
 impl Actor for MyWs {
@@ -61,12 +71,15 @@ impl MyWs {
 						Some(json)
 					}
 					PhxMsgType::Event => {
-						let json = if self.using_emoji {
+						println!("ASSIGNS BEFORE: {:?}", self.assigns);
+						let using_emoji = self.assigns.get(&AppKey::UsingEmoji).expect("using-emoji").to_bool();
+						let json = if using_emoji {
 							json!({"diff":{"0":"Hello","2":"Use Emoji"}})
 						} else {
 							json!({"diff":{"0":"👋","2":"Use Text"}})
 						};
-						self.using_emoji = !self.using_emoji;
+						self.assigns.insert(AppKey::UsingEmoji, lv::Value::from(!using_emoji));
+						println!("ASSIGNS AFTER: {:?}", self.assigns);
 						Some(json)
 					}
 					PhxMsgType::Unknown(_) => None,
@@ -85,37 +98,6 @@ impl MyWs {
 				reply
 			}
 			_ => None
-		}
-	}
-}
-
-pub async fn ws_index(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, actix_web::Error> {
-	let resp = ws::start(MyWs { using_emoji: true }, &req, stream);
-	println!("{:?}", resp);
-	resp
-}
-
-mod phx {
-	use serde_json::Value;
-	use crate::lv::app::websocket::phx::PhxMsgType::{Event, Heartbeat, Join};
-
-	#[derive(Debug, Clone)]
-	pub enum PhxMsgType {
-		Join,
-		Heartbeat,
-		Event,
-		Unknown(String),
-	}
-
-	impl From<&Value> for PhxMsgType {
-		fn from(value: &Value) -> Self {
-			let s = value.as_str().unwrap();
-			match s {
-				"phx_join" => Join,
-				"heartbeat" => Heartbeat,
-				"event" => Event,
-				&_ => PhxMsgType::Unknown(s.to_string())
-			}
 		}
 	}
 }

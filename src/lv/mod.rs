@@ -4,7 +4,7 @@ use std::hash::Hash;
 pub use vision::*;
 pub use value::*;
 pub use state::*;
-pub use socket::*;
+use crate::lv::socket::Socket;
 
 pub struct Session {}
 
@@ -20,10 +20,11 @@ pub trait LiveView {
 	}
 }
 
-pub mod app;
+pub mod server;
+pub mod socket;
 mod vision;
 mod value;
 mod state;
-mod socket;
+mod phx;
 
 
