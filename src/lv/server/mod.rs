@@ -1,3 +1,7 @@
+pub(crate) mod assets;
+pub(crate) mod app;
+pub(crate) mod my_ws;
+
 use std::error::Error;
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder, HttpRequest};
 use actix_web_actors::ws;
@@ -49,6 +53,4 @@ pub async fn start() -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
-pub(crate) mod assets;
-pub(crate) mod app;
-pub(crate) mod my_ws;
+

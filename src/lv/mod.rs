@@ -1,3 +1,9 @@
+mod vision;
+mod value;
+mod state;
+mod phx;
+mod vision2;
+
 use std::error::Error;
 use std::hash::Hash;
 
@@ -20,9 +26,5 @@ pub trait LiveView {
 
 pub mod server;
 pub mod socket;
-mod vision;
-mod value;
-mod state;
-mod phx;
 
 
