@@ -33,6 +33,9 @@ async fn live_websocket(req: HttpRequest, stream: web::Payload) -> impl Responde
 }
 
 pub async fn start() -> Result<(), Box<dyn Error>> {
+	let host = "127.0.0.1";
+	let port = 8000;
+	println!("Listening at http://{}:{}/rs", host, port);
 	HttpServer::new(|| {
 		let live_app = LiveApp::new();
 		let app = App::new()
@@ -41,9 +44,8 @@ pub async fn start() -> Result<(), Box<dyn Error>> {
 			.service(index_js)
 			.service(index_js_map)
 			.service(live_websocket);
-		//.route("/live/websocket", web::get().to(websocket::ws_index));
 		app
-	}).bind(("127.0.0.1", 8000))?.run().await?;
+	}).bind((host, port))?.run().await?;
 	Ok(())
 }
 
