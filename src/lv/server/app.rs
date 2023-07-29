@@ -21,5 +21,4 @@ impl LiveApp {
 		let postfix = assets::postfix();
 		Ok(format!("{}{}{}", prefix, live_slice, postfix))
 	}
-	pub fn socket(&self) -> &Addr<SocketActor> { &self.socket }
 }

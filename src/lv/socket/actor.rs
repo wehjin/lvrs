@@ -12,7 +12,7 @@ impl Handler<HtmlAsString> for SocketActor {
 	type Result = String;
 
 	fn handle(&mut self, _msg: HtmlAsString, _ctx: &mut Self::Context) -> Self::Result {
-		Vision::Live.to_string()
+		Vision::LiveEmoji.to_string()
 	}
 }
 

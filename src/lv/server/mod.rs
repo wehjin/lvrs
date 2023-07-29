@@ -25,10 +25,10 @@ async fn index_js_map() -> impl Responder {
 }
 
 #[get("/live/websocket")]
-async fn live_websocket(req: HttpRequest, stream: web::Payload, live_app: web::Data<LiveApp>) -> impl Responder {
+async fn live_websocket(req: HttpRequest, stream: web::Payload) -> impl Responder {
 	let actor = MyWs::new();
 	let resp = ws::start(actor, &req, stream);
-	println!("{:?}", resp);
+	println!("WEBSOCKET: {:?}", resp);
 	resp
 }
 
