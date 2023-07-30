@@ -1,11 +1,11 @@
-mod slice;
+pub(crate) mod slice;
 mod parts;
 
 use crate::lv::vision2::parts::{Block, Element, Node, NodeList, StaticsBuilder};
-use crate::lv::vision2::slice::Slice;
+use crate::lv::vision2::slice::{emoji_fills, Slice, slices, text_fills};
 use serde_json::{Map, Value as JsonValue};
 
-
+#[derive(Debug, Clone)]
 pub struct Vision2 {
 	roots: Vec<Node>,
 	fills: Vec<String>,
@@ -13,7 +13,7 @@ pub struct Vision2 {
 
 impl Vision2 {
 	pub fn new() -> Self { Vision2 { roots: Vec::new(), fills: Vec::new() } }
-	pub fn to_string(&self) -> String { self.nodes_to_string() }
+	pub fn to_html_string(&self) -> String { self.nodes_to_string() }
 	pub fn to_phx_rendered(&self) -> JsonValue {
 		let mut builder = StaticsBuilder::new();
 		self.add_nodes_to_statics(&mut builder);
@@ -40,11 +40,21 @@ impl NodeList for Vision2 {
 	}
 }
 
-pub fn vision() -> Vision2 {
+pub fn emoji_vision() -> Vision2 {
+	let slices = slices(emoji_fills());
+	vision(slices)
+}
+
+pub fn text_vision() -> Vision2 {
+	let slices = slices(text_fills());
+	vision(slices)
+}
+
+fn vision(slices: Vec<Slice>) -> Vision2 {
 	let mut vision = Vision2::new();
 	let mut open_element: Option<Element> = None;
 	let mut parents: Vec<Element> = Vec::new();
-	for slice in slice::slices() {
+	for slice in slices {
 		match slice {
 			Slice::OpenElement(name) => {
 				if let Some(parent) = open_element.take() {
@@ -97,11 +107,11 @@ pub fn vision() -> Vision2 {
 
 #[cfg(test)]
 mod tests {
-	use crate::lv::vision2::vision;
+	use crate::lv::vision2::emoji_vision;
 
 	#[test]
 	fn test0() {
-		let vision = vision();
+		let vision = emoji_vision();
 		let rendered = vision.to_phx_rendered();
 		let rendered = serde_json::to_string_pretty(&rendered).unwrap();
 		println!("{}", rendered)

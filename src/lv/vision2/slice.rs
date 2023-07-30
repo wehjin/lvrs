@@ -6,18 +6,28 @@ pub(crate) enum Slice {
 	AddText(String),
 }
 
-pub(crate) fn slices() -> Vec<Slice> {
+pub(crate) fn emoji_fills() -> Vec<String> {
+	vec![
+		"👋".to_string(),
+		"Liveviewjstest".to_string(),
+		"Use Text".to_string(),
+	]
+}
+
+pub(crate) fn text_fills() -> Vec<String> {
+	vec![
+		"Hello".to_string(),
+		"Liveviewjstest".to_string(),
+		"Use Emoji".to_string(),
+	]
+}
+
+pub(crate) fn slices(fills: Vec<String>) -> Vec<Slice> {
 	fn tag_in(name: &str) -> Slice { Slice::OpenElement(name.into()) }
 	fn tag_out(name: &str) -> Slice { Slice::CloseElement(name.into()) }
 	fn attr(name: &str, value: &str) -> Slice { Slice::AddAttribute(name.into(), value.into()) }
 	fn block(text: &str) -> Slice { Slice::AddBlock(text.into()) }
 	fn text(text: &str) -> Slice { Slice::AddText(text.into()) }
-	let emoji_fills = vec![
-		"👋".to_string(),
-		"Liveviewjstest".to_string(),
-		"Use Text".to_string(),
-	];
-	let fills = &emoji_fills;
 	let slices = vec![
 		tag_in("div"),
 		attr("class", "flex flex-col items-center space-y-10 pt-10"),

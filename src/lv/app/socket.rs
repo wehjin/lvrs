@@ -30,6 +30,3 @@ impl<K: Eq + Hash + Clone> Socket<K> {
 		Socket { assigns }
 	}
 }
-
-pub(crate) mod message;
-pub(crate) mod actor;

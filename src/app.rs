@@ -1,7 +1,8 @@
 use std::error::Error;
 use crate::app::AppKey::UsingEmoji;
 use crate::lv::{LiveView, Session, Assigns, Value, Vision};
-use crate::lv::socket::Socket;
+use crate::lv::app::socket::Socket;
+use crate::lv::vision2::{emoji_vision, text_vision};
 
 pub struct AppParams {}
 
@@ -24,8 +25,8 @@ impl LiveView for App {
 	fn render(assigns: &Assigns<Self::StateKey>) -> Vision {
 		let using_emoji = assigns.read(&UsingEmoji).to_bool();
 		match using_emoji {
-			true => Vision::LiveEmoji,
-			false => Vision::LiveText,
+			true => Vision::LiveEmoji(emoji_vision()),
+			false => Vision::LiveText(text_vision()),
 		}
 	}
 
