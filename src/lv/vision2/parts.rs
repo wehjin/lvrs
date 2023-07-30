@@ -90,12 +90,12 @@ impl ToString for Attribute {
 }
 
 pub struct Block {
-	pub index: usize,
+	pub value: String,
 }
 
 impl ToString for Block {
 	fn to_string(&self) -> String {
-		format!("[Block:{}]", self.index)
+		self.value.to_string()
 	}
 }
 

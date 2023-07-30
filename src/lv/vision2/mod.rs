@@ -8,10 +8,11 @@ use serde_json::{Map, Value as JsonValue};
 
 pub struct Vision2 {
 	roots: Vec<Node>,
+	fills: Vec<String>,
 }
 
 impl Vision2 {
-	pub fn new() -> Self { Vision2 { roots: Vec::new() } }
+	pub fn new() -> Self { Vision2 { roots: Vec::new(), fills: Vec::new() } }
 	pub fn to_string(&self) -> String { self.nodes_to_string() }
 	pub fn to_phx_rendered(&self) -> JsonValue {
 		let mut builder = StaticsBuilder::new();
@@ -19,14 +20,16 @@ impl Vision2 {
 		let s_value = builder.close();
 		{
 			let mut m = Map::new();
-			let fills = vec!["👋".to_string(), "Liveviewjstest".to_string(), "Use Text".to_string()];
-			for (i, s) in fills.iter().enumerate() {
+			for (i, s) in self.fills.iter().enumerate() {
 				let v = JsonValue::String(s.to_string());
 				m.insert(i.to_string(), v);
 			}
 			m.insert("s".to_string(), s_value);
 			JsonValue::Object(m)
 		}
+	}
+	pub fn add_fill(&mut self, value: String) {
+		self.fills.push(value);
 	}
 }
 
@@ -70,12 +73,13 @@ pub fn vision() -> Vision2 {
 					panic!("attribute requires previous entrance")
 				}
 			}
-			Slice::AddBlock(index) => {
+			Slice::AddBlock(value) => {
 				if let Some(mut parent) = open_element.take() {
-					parent.add_block(Block { index });
+					vision.add_fill(value.to_string());
+					parent.add_block(Block { value });
 					open_element = Some(parent);
 				} else {
-					vision.add_block(Block { index });
+					vision.add_block(Block { value });
 				}
 			}
 			Slice::AddText(text) => {

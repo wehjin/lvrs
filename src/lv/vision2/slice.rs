@@ -2,7 +2,7 @@ pub(crate) enum Slice {
 	OpenElement(String),
 	CloseElement(String),
 	AddAttribute(String, String),
-	AddBlock(usize),
+	AddBlock(String),
 	AddText(String),
 }
 
@@ -10,8 +10,14 @@ pub(crate) fn slices() -> Vec<Slice> {
 	fn tag_in(name: &str) -> Slice { Slice::OpenElement(name.into()) }
 	fn tag_out(name: &str) -> Slice { Slice::CloseElement(name.into()) }
 	fn attr(name: &str, value: &str) -> Slice { Slice::AddAttribute(name.into(), value.into()) }
-	fn block(index: usize) -> Slice { Slice::AddBlock(index) }
+	fn block(text: &str) -> Slice { Slice::AddBlock(text.into()) }
 	fn text(text: &str) -> Slice { Slice::AddText(text.into()) }
+	let emoji_fills = vec![
+		"👋".to_string(),
+		"Liveviewjstest".to_string(),
+		"Use Text".to_string(),
+	];
+	let fills = &emoji_fills;
 	let slices = vec![
 		tag_in("div"),
 		attr("class", "flex flex-col items-center space-y-10 pt-10"),
@@ -19,14 +25,14 @@ pub(crate) fn slices() -> Vec<Slice> {
 		attr("class", "flex flex-col items-center space-y-5"),
 		tag_in("h1"),
 		attr("class", "text-2xl font-bold"),
-		block(0),
+		block(fills[0].as_str()),
 		text(" "),
-		block(1),
+		block(fills[1].as_str()),
 		tag_out("h1"),
 		tag_in("button"),
 		attr("class", "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"),
 		attr("phx-click", "toggle"),
-		block(2),
+		block(fills[2].as_str()),
 		tag_out("button"),
 		tag_out("div"),
 		tag_in("div"),
