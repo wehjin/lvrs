@@ -6,16 +6,12 @@ use serde_json::{Map, Value as JsonValue};
 use crate::lv::vision2::slice::Slice;
 
 #[derive(Debug, Clone)]
-pub struct Vision2 {
+pub struct Vision {
 	pub roots: Vec<Node>,
 	pub fills: Vec<String>,
 }
 
-impl Vision2 {
-	pub fn new() -> Self { Vision2 { roots: Vec::new(), fills: Vec::new() } }
-	pub fn add_fill(&mut self, value: String) {
-		self.fills.push(value);
-	}
+impl Vision {
 	pub fn to_html_string(&self) -> String { self.nodes_to_string() }
 	pub fn to_phx_reply_rendered(&self) -> JsonValue {
 		let mut builder = StaticsBuilder::new();
@@ -31,7 +27,7 @@ impl Vision2 {
 			JsonValue::Object(m)
 		}
 	}
-	pub fn to_phx_reply_diff(&self, later_vision: &Vision2) -> JsonValue {
+	pub fn to_phx_reply_diff(&self, later_vision: &Vision) -> JsonValue {
 		let mut map = Map::new();
 		let early_blocks = self.to_nodelist_blocks();
 		let early_late_blocks = early_blocks.into_iter().zip(later_vision.to_nodelist_blocks().into_iter());
@@ -44,15 +40,19 @@ impl Vision2 {
 		}
 		JsonValue::Object(map)
 	}
+	pub fn new() -> Self { Vision { roots: Vec::new(), fills: Vec::new() } }
+	pub fn add_fill(&mut self, value: String) {
+		self.fills.push(value);
+	}
 }
 
-impl NodeList for Vision2 {
+impl NodeList for Vision {
 	fn nodes(&self) -> &Vec<Node> { &self.roots }
 	fn add_node(&mut self, node: Node) { self.roots.push(node); }
 }
 
-pub(crate) fn vision(slices: Vec<Slice>) -> Vision2 {
-	let mut vision = Vision2::new();
+pub(crate) fn vision(slices: Vec<Slice>) -> Vision {
+	let mut vision = Vision::new();
 	let mut open_element: Option<Element> = None;
 	let mut parents: Vec<Element> = Vec::new();
 	for slice in slices {

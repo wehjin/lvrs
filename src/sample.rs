@@ -1,8 +1,8 @@
 use std::error::Error;
 use crate::sample::SampleAppAssignKey::UsingEmoji;
-use crate::lv::{LiveView, Session, Assigns, Value, FakeVision};
+use crate::lv::{LiveView, Session, Assigns, Value};
 use crate::lv::app::socket::Socket;
-use crate::lv::vision2::{vision};
+use crate::lv::vision2::{vision, Vision};
 use crate::lv::vision2::slice::{Slice, SliceListBuilder};
 
 pub struct SampleAppParams {}
@@ -19,14 +19,14 @@ impl LiveView for SampleApp {
 	type Msg = SampleAppMsg;
 	type StateKey = SampleAppAssignKey;
 
-	fn render(assigns: &Assigns<Self::StateKey>) -> FakeVision {
+	fn render(assigns: &Assigns<Self::StateKey>) -> Vision {
 		let using_emoji = assigns.read(&UsingEmoji).to_bool();
 		let fills = match using_emoji {
 			true => emoji_fills(),
 			false => text_fills(),
 		};
 		let slices = build_slices(fills);
-		FakeVision { vision2: vision(slices) }
+		vision(slices)
 	}
 
 	fn mount(_params: &Self::Params, _session: &Session, socket: &Socket<Self::StateKey>) -> Result<Socket<Self::StateKey>, Box<dyn Error>> {
@@ -46,40 +46,32 @@ impl LiveView for SampleApp {
 
 fn build_slices(fills: Vec<String>) -> Vec<Slice> {
 	let mut builder = SliceListBuilder::new();
-	builder.add_open("div".to_string(), vec![
-		("class".to_string(), "flex flex-col items-center space-y-10 pt-10".to_string())
-	]);
-	builder.add_open("div".to_string(), vec![
-		("class".to_string(), "flex flex-col items-center space-y-5".to_string())
-	]);
-	builder.add_open("h1".to_string(), vec![
-		("class".to_string(), "text-2xl font-bold".to_string())
-	]);
+	builder.add_open("div", vec![("class", "flex flex-col items-center space-y-10 pt-10")]);
+	builder.add_open("div", vec![("class", "flex flex-col items-center space-y-5")]);
+	builder.add_open("h1", vec![("class", "text-2xl font-bold")]);
 	builder.add_block(fills[0].to_string());
-	builder.add_text(" ".to_string());
+	builder.add_text(" ");
 	builder.add_block(fills[1].to_string());
-	builder.add_close("h1".to_string());
-	builder.add_open("button".to_string(), vec![
-		("class".to_string(), "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded".to_string()),
-		("phx-click".to_string(), "toggle".to_string()),
+	builder.add_close("h1");
+	builder.add_open("button", vec![
+		("class", "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"),
+		("phx-click", "toggle"),
 	]);
 	builder.add_block(fills[2].to_string());
-	builder.add_close("button".to_string());
-	builder.add_close("div".to_string());
-	builder.add_open("div".to_string(), vec![
-		("class".to_string(), "text-center max-w-[200px]".to_string())
+	builder.add_close("button");
+	builder.add_close("div");
+	builder.add_open("div", vec![("class", "text-center max-w-[200px]")]);
+	builder.add_text("\n          More documentation and examples at\n          ");
+	builder.add_open("a", vec![
+		("class", "text-blue-500"),
+		("href", "https://liveviewjs.com"),
+		("target", "_blank"),
+		("rel", "noopener noreferrer"),
 	]);
-	builder.add_text("\n          More documentation and examples at\n          ".to_string());
-	builder.add_open("a".to_string(), vec![
-		("class".to_string(), "text-blue-500".to_string()),
-		("href".to_string(), "https://liveviewjs.com".to_string()),
-		("target".to_string(), "_blank".to_string()),
-		("rel".to_string(), "noopener noreferrer".to_string()),
-	]);
-	builder.add_text("LiveViewJS.com".to_string());
-	builder.add_close("a".to_string());
-	builder.add_close("div".to_string());
-	builder.add_close("div".to_string());
+	builder.add_text("LiveViewJS.com");
+	builder.add_close("a");
+	builder.add_close("div");
+	builder.add_close("div");
 	builder.build()
 }
 
