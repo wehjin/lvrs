@@ -2,6 +2,16 @@ use serde_json::Value as JsonValue;
 
 pub trait NodeList {
 	fn nodes(&self) -> &Vec<Node>;
+	fn to_nodelist_blocks(&self) -> Vec<&Block> {
+		let mut blocks = Vec::new();
+		self.get_nodelist_blocks(&mut blocks);
+		blocks
+	}
+	fn get_nodelist_blocks<'a>(&'a self, blocks: &mut Vec<&'a Block>) {
+		for node in self.nodes() {
+			node.get_blocks(blocks);
+		}
+	}
 	fn add_node(&mut self, node: Node);
 	fn add_element(&mut self, element: Element) {
 		let node = Node::Element(element);
@@ -30,7 +40,7 @@ pub trait NodeList {
 	}
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct Element {
 	name: String,
 	attributes: Vec<Attribute>,
@@ -79,7 +89,7 @@ impl NodeList for Element {
 }
 
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct Attribute {
 	pub name: String,
 	pub value: String,
@@ -91,7 +101,7 @@ impl ToString for Attribute {
 	}
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct Block {
 	pub value: String,
 }
@@ -102,7 +112,7 @@ impl ToString for Block {
 	}
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub enum Node {
 	Element(Element),
 	Block(Block),
@@ -115,6 +125,13 @@ impl Node {
 			Node::Element(el) => el.add_to_statics(builder),
 			Node::Block(_) => builder.add_dynamic(),
 			Node::Text(s) => builder.add_static(s),
+		}
+	}
+	pub(crate) fn get_blocks<'a>(&'a self, blocks: &mut Vec<&'a Block>) {
+		match self {
+			Node::Element(el) => el.get_nodelist_blocks(blocks),
+			Node::Block(b) => blocks.push(b),
+			Node::Text(_) => ()
 		}
 	}
 }

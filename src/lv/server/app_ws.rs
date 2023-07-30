@@ -23,14 +23,17 @@ impl Handler<MyWsMsg> for AppWs {
 
 	fn handle(&mut self, msg: MyWsMsg, ctx: &mut Self::Context) -> Self::Result {
 		match msg {
-			MyWsMsg::PhxReply(reply) => ctx.text(reply),
+			MyWsMsg::PhxReply(reply) => {
+				eprintln!("WEBSOCKET REPLY: {:?}", &reply);
+				ctx.text(reply)
+			}
 		}
 	}
 }
 
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for AppWs {
 	fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
-		println!("WEBSOCKET MSG: {:?}", msg);
+		eprintln!("---\nWEBSOCKET MSG: {:?}", msg);
 		match msg {
 			Ok(msg) => {
 				match msg {

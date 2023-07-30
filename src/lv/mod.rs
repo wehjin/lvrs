@@ -25,7 +25,7 @@ pub trait LiveView {
 	type Msg;
 	type StateKey: Eq + Hash + Clone;
 
-	fn render(state: &Assigns<Self::StateKey>) -> Vision;
+	fn render(state: &Assigns<Self::StateKey>) -> FakeVision;
 	fn mount(params: &Self::Params, session: &Session, socket: &Socket<Self::StateKey>) -> Result<Socket<Self::StateKey>, Box<dyn Error>>;
 	fn handle_event(msg: Self::Msg, params: &Self::Params, socket: &Socket<Self::StateKey>) -> Result<Socket<Self::StateKey>, Box<dyn Error>>;
 }

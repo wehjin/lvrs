@@ -1,8 +1,8 @@
 use actix::prelude::*;
 use actix::Message;
 use crate::lv::prelude::*;
-use crate::lv::{LiveView, Session, Vision};
-use crate::app::{App, AppKey, AppMsg, AppParams};
+use crate::lv::{LiveView, Session, FakeVision};
+use crate::sample::{SampleApp, SampleAppAssignKey, SampleAppMsg, SampleAppParams};
 use crate::lv::app::socket::Socket;
 use crate::lv::phx::{PhxMsgType, PHX_REPLY, reply_ok};
 use crate::lv::server::app_ws::MyWsMsg;
@@ -22,10 +22,10 @@ pub(crate) enum AppAgentMsg {
 pub(crate) struct ToHtmlString;
 
 pub(crate) struct AppAgent {
-	params: AppParams,
+	params: SampleAppParams,
 	session: Session,
-	socket: Socket<AppKey>,
-	vision: Vision,
+	socket: Socket<SampleAppAssignKey>,
+	vision: FakeVision,
 }
 
 impl Actor for AppAgent {
@@ -39,7 +39,6 @@ impl Handler<AppAgentMsg> for AppAgent {
 		match msg {
 			AppAgentMsg::PhxRequest { request, requester } => {
 				let reply = self.handle_event(&request);
-				println!("WEBSOCKET REPLY: {:?}", reply);
 				if let Some(reply) = reply {
 					let msg = MyWsMsg::PhxReply(reply);
 					requester.do_send(msg);
@@ -64,10 +63,10 @@ pub(crate) fn start() -> Addr<AppAgent> {
 
 impl AppAgent {
 	pub fn new() -> Self {
-		let params = AppParams {};
+		let params = SampleAppParams {};
 		let session = Session {};
-		let socket = App::mount(&params, &session, &Socket::new()).expect("mount");
-		let vision = App::render(&socket.assigns());
+		let socket = SampleApp::mount(&params, &session, &Socket::new()).expect("mount");
+		let vision = SampleApp::render(&socket.assigns());
 		AppAgent { params, session, socket, vision }
 	}
 	fn handle_event(&mut self, msg: &JsonValue) -> Option<String> {
@@ -79,9 +78,9 @@ impl AppAgent {
 					PhxMsgType::Heartbeat => Some(json!({})),
 					PhxMsgType::Event => {
 						println!("ASSIGNS BEFORE: {:?}", self.socket.assigns());
-						self.socket = App::handle_event(AppMsg::Toggle, &self.params, &self.socket).expect("handle_event");
-						let new_vision = App::render(&self.socket.assigns());
-						let phx_diffs = self.vision.phx_diffs(&new_vision);
+						self.socket = SampleApp::handle_event(SampleAppMsg::Toggle, &self.params, &self.socket).expect("handle_event");
+						let new_vision = SampleApp::render(&self.socket.assigns());
+						let phx_diffs = self.vision.phx_diff(&new_vision);
 						self.vision = new_vision;
 						println!("ASSIGNS AFTER: {:?}", self.socket.assigns());
 						Some(phx_diffs)

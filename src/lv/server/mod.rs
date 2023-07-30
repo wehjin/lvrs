@@ -32,7 +32,6 @@ async fn index_js_map() -> impl Responder {
 async fn live_websocket(req: HttpRequest, stream: web::Payload, app_state: web::Data<AppState>) -> impl Responder {
 	let app_worker = AppWs::new(app_state.app_worker().clone());
 	let resp = ws::start(app_worker, &req, stream);
-	println!("WEBSOCKET: {:?}", resp);
 	resp
 }
 

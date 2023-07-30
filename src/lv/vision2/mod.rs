@@ -2,19 +2,22 @@ pub(crate) mod slice;
 mod parts;
 
 use crate::lv::vision2::parts::{Block, Element, Node, NodeList, StaticsBuilder};
-use crate::lv::vision2::slice::{emoji_fills, Slice, slices, text_fills};
 use serde_json::{Map, Value as JsonValue};
+use crate::lv::vision2::slice::Slice;
 
 #[derive(Debug, Clone)]
 pub struct Vision2 {
-	roots: Vec<Node>,
-	fills: Vec<String>,
+	pub roots: Vec<Node>,
+	pub fills: Vec<String>,
 }
 
 impl Vision2 {
 	pub fn new() -> Self { Vision2 { roots: Vec::new(), fills: Vec::new() } }
+	pub fn add_fill(&mut self, value: String) {
+		self.fills.push(value);
+	}
 	pub fn to_html_string(&self) -> String { self.nodes_to_string() }
-	pub fn to_phx_rendered(&self) -> JsonValue {
+	pub fn to_phx_reply_rendered(&self) -> JsonValue {
 		let mut builder = StaticsBuilder::new();
 		self.add_nodes_to_statics(&mut builder);
 		let s_value = builder.close();
@@ -28,29 +31,27 @@ impl Vision2 {
 			JsonValue::Object(m)
 		}
 	}
-	pub fn add_fill(&mut self, value: String) {
-		self.fills.push(value);
+	pub fn to_phx_reply_diff(&self, later_vision: &Vision2) -> JsonValue {
+		let mut map = Map::new();
+		let early_blocks = self.to_nodelist_blocks();
+		let early_late_blocks = early_blocks.into_iter().zip(later_vision.to_nodelist_blocks().into_iter());
+		for (i, (early, late)) in early_late_blocks.enumerate() {
+			if early.value != late.value {
+				let key = i.to_string();
+				let value = JsonValue::String(late.to_string());
+				map.insert(key, value);
+			}
+		}
+		JsonValue::Object(map)
 	}
 }
 
 impl NodeList for Vision2 {
 	fn nodes(&self) -> &Vec<Node> { &self.roots }
-	fn add_node(&mut self, node: Node) {
-		self.roots.push(node);
-	}
+	fn add_node(&mut self, node: Node) { self.roots.push(node); }
 }
 
-pub fn emoji_vision() -> Vision2 {
-	let slices = slices(emoji_fills());
-	vision(slices)
-}
-
-pub fn text_vision() -> Vision2 {
-	let slices = slices(text_fills());
-	vision(slices)
-}
-
-fn vision(slices: Vec<Slice>) -> Vision2 {
+pub(crate) fn vision(slices: Vec<Slice>) -> Vision2 {
 	let mut vision = Vision2::new();
 	let mut open_element: Option<Element> = None;
 	let mut parents: Vec<Element> = Vec::new();
@@ -104,18 +105,3 @@ fn vision(slices: Vec<Slice>) -> Vision2 {
 	}
 	vision
 }
-
-#[cfg(test)]
-mod tests {
-	use crate::lv::vision2::emoji_vision;
-
-	#[test]
-	fn test0() {
-		let vision = emoji_vision();
-		let rendered = vision.to_phx_rendered();
-		let rendered = serde_json::to_string_pretty(&rendered).unwrap();
-		println!("{}", rendered)
-	}
-}
-
-
