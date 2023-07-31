@@ -6,9 +6,7 @@ use crate::lv::app::agent::{AppAgent, AppAgentMsg};
 
 #[derive(actix::Message)]
 #[rtype(result = "()")]
-pub(crate) enum MyWsMsg {
-	PhxReply(String)
-}
+pub(crate) enum AppWsMsg { PhxReply(JsonValue) }
 
 pub(crate) struct AppWs {
 	app_agent: Addr<AppAgent>,
@@ -18,14 +16,14 @@ impl Actor for AppWs {
 	type Context = ws::WebsocketContext<Self>;
 }
 
-impl Handler<MyWsMsg> for AppWs {
+impl Handler<AppWsMsg> for AppWs {
 	type Result = ();
 
-	fn handle(&mut self, msg: MyWsMsg, ctx: &mut Self::Context) -> Self::Result {
+	fn handle(&mut self, msg: AppWsMsg, ctx: &mut Self::Context) -> Self::Result {
 		match msg {
-			MyWsMsg::PhxReply(reply) => {
-				eprintln!("WEBSOCKET REPLY: {:?}", &reply);
-				ctx.text(reply)
+			AppWsMsg::PhxReply(reply) => {
+				eprintln!("WEBSOCKET REPLY: {}", &reply);
+				ctx.text(reply.to_string())
 			}
 		}
 	}

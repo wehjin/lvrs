@@ -4,8 +4,8 @@ use crate::lv::prelude::*;
 use crate::lv::{LiveView, Session};
 use crate::sample::{SampleApp, SampleAppAssignKey, SampleAppMsg, SampleAppParams};
 use crate::lv::app::socket::Socket;
-use crate::lv::phx::{PhxMsgType, PHX_REPLY, reply_ok};
-use crate::lv::server::app_ws::MyWsMsg;
+use crate::lv::phx::{PhxEvent};
+use crate::lv::server::app_ws::AppWsMsg;
 use crate::lv::vision2::{Vision};
 
 #[derive(Message)]
@@ -15,7 +15,7 @@ pub(crate) struct HtmlAsString;
 #[derive(Message)]
 #[rtype(result = "()")]
 pub(crate) enum AppAgentMsg {
-	PhxRequest { request: JsonValue, requester: Recipient<MyWsMsg> }
+	PhxRequest { request: JsonValue, requester: Recipient<AppWsMsg> }
 }
 
 #[derive(Message)]
@@ -41,8 +41,7 @@ impl Handler<AppAgentMsg> for AppAgent {
 			AppAgentMsg::PhxRequest { request, requester } => {
 				let reply = self.handle_event(&request);
 				if let Some(reply) = reply {
-					let msg = MyWsMsg::PhxReply(reply);
-					requester.do_send(msg);
+					requester.do_send(AppWsMsg::PhxReply(reply));
 				}
 			}
 		}
@@ -70,35 +69,35 @@ impl AppAgent {
 		let vision = SampleApp::render(&socket.assigns());
 		AppAgent { params, session, socket, vision }
 	}
-	fn handle_event(&mut self, msg: &JsonValue) -> Option<String> {
-		match msg {
-			JsonValue::Array(vec) => {
-				let msg_type = PhxMsgType::from(&vec[3]);
-				let response = match msg_type {
-					PhxMsgType::Join => Some(json!({"rendered": self.vision.to_phx_reply_rendered()})),
-					PhxMsgType::Heartbeat => Some(json!({})),
-					PhxMsgType::Event => {
-						println!("ASSIGNS BEFORE: {:?}", self.socket.assigns());
-						self.socket = SampleApp::handle_event(SampleAppMsg::Toggle, &self.params, &self.socket).expect("handle_event");
-						let new_vision = SampleApp::render(&self.socket.assigns());
-						let phx_diffs = json!({"diff": self.vision.to_phx_reply_diff(&new_vision)});
-						self.vision = new_vision;
-						println!("ASSIGNS AFTER: {:?}", self.socket.assigns());
-						Some(phx_diffs)
-					}
-					PhxMsgType::Unknown(_) => None,
-				};
-				let reply = response.map(|response| json!([
-					vec[0].clone(),
-					vec[1].clone(),
-					vec[2].clone(),
-					PHX_REPLY,
-					reply_ok(response)
-				]));
-				let reply = reply.map(|it| it.to_string());
-				reply
+	fn handle_event(&mut self, msg: &JsonValue) -> Option<JsonValue> {
+		let phx = PhxEvent::from_array(msg.as_array().unwrap());
+		println!("PHX EVENT: {:?}", phx);
+		match &phx {
+			PhxEvent::Heartbeat(_) => {
+				let json = json!({});
+				Some(phx.context().to_phx_reply(json))
 			}
-			_ => None
+			PhxEvent::Join(_, _) => {
+				let json = json!({"rendered": self.vision.to_phx_rendered()});
+				Some(phx.context().to_phx_reply(json))
+			}
+			PhxEvent::UserEvent { event, .. } => {
+				if event == "toggle" {
+					println!("ASSIGNS BEFORE: {:?}", self.socket.assigns());
+					self.socket = SampleApp::handle_event(SampleAppMsg::Toggle, &self.params, &self.socket).expect("handle_event");
+					println!("ASSIGNS AFTER: {:?}", self.socket.assigns());
+					let (json, new_vision) = {
+						let new_vision = SampleApp::render(&self.socket.assigns());
+						let json = json!({"diff": self.vision.to_phx_diff(&new_vision)});
+						(json, new_vision)
+					};
+					self.vision = new_vision;
+					Some(phx.context().to_phx_reply(json))
+				} else {
+					None
+				}
+			}
+			PhxEvent::NotImplemented(_, _, _) => None
 		}
 	}
 }

@@ -13,7 +13,7 @@ pub struct Vision {
 
 impl Vision {
 	pub fn to_html_string(&self) -> String { self.nodes_to_string() }
-	pub fn to_phx_reply_rendered(&self) -> JsonValue {
+	pub fn to_phx_rendered(&self) -> JsonValue {
 		let mut builder = StaticsBuilder::new();
 		self.add_nodes_to_statics(&mut builder);
 		let s_value = builder.close();
@@ -27,7 +27,7 @@ impl Vision {
 			JsonValue::Object(m)
 		}
 	}
-	pub fn to_phx_reply_diff(&self, later_vision: &Vision) -> JsonValue {
+	pub fn to_phx_diff(&self, later_vision: &Vision) -> JsonValue {
 		let mut map = Map::new();
 		let early_blocks = self.to_nodelist_blocks();
 		let early_late_blocks = early_blocks.into_iter().zip(later_vision.to_nodelist_blocks().into_iter());
