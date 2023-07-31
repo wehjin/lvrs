@@ -2,8 +2,7 @@ use std::error::Error;
 use crate::sample::SampleAppAssignKeys::UsingEmoji;
 use crate::lv::{LiveView, Session, Assigns, Value};
 use crate::lv::app::socket::Socket;
-use crate::lv::vision::{vision, Vision};
-use crate::lv::vision::slice::{Slice, SliceListBuilder};
+use crate::lv::vision::{Vision};
 
 pub struct SampleAppParams {}
 
@@ -34,70 +33,42 @@ impl LiveView for SampleApp {
 	}
 
 	fn render(assigns: &Assigns<Self::AssignKeys>) -> Vision {
-		let using_emoji = assigns.read(&UsingEmoji).to_bool();
-		let fills = match using_emoji {
-			true => emoji_fills(),
-			false => text_fills(),
+		let use_emoji = assigns.read(&UsingEmoji).to_bool();
+		let hello = match use_emoji {
+			true => "👋",
+			false => "Hello",
 		};
-		let slices = build_slices(fills);
-		vision(slices)
+		let name = "Liveviewjstest";
+		vision! {
+			<div class = "flex flex-col items-center space-y-10 pt-10" >
+			<div class ="flex flex-col items-center space-y-5" >
+			<h1 class = "text-2xl font-bold" >{hello} {name}< / h1 >
+			<button class = "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" phx-click = "toggle" >
+			{if use_emoji { "Use Text"} else {"Use Emoji"}}
+			</button >
+			</div >
+			<div class = "text-center max-w-[200px]" >
+			"\n          More documentation and examples at\n          "
+			<a class = "text-blue-500" href = "https://liveviewjs.com" target ="_blank" rel = "noopener noreferrer" >
+			"LiveViewJS.com"
+			</a >
+			</div >
+			</div >
+		}
 	}
-}
-
-fn build_slices(fills: Vec<String>) -> Vec<Slice> {
-	let mut builder = SliceListBuilder::new();
-	builder.add_open("div", vec![("class", "flex flex-col items-center space-y-10 pt-10")]);
-	builder.add_open("div", vec![("class", "flex flex-col items-center space-y-5")]);
-	builder.add_open("h1", vec![("class", "text-2xl font-bold")]);
-	builder.add_block(fills[0].to_string());
-	builder.add_text(" ");
-	builder.add_block(fills[1].to_string());
-	builder.add_close("h1");
-	builder.add_open("button", vec![
-		("class", "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"),
-		("phx-click", "toggle"),
-	]);
-	builder.add_block(fills[2].to_string());
-	builder.add_close("button");
-	builder.add_close("div");
-	builder.add_open("div", vec![("class", "text-center max-w-[200px]")]);
-	builder.add_text("\n          More documentation and examples at\n          ");
-	builder.add_open("a", vec![
-		("class", "text-blue-500"),
-		("href", "https://liveviewjs.com"),
-		("target", "_blank"),
-		("rel", "noopener noreferrer"),
-	]);
-	builder.add_text("LiveViewJS.com");
-	builder.add_close("a");
-	builder.add_close("div");
-	builder.add_close("div");
-	builder.build()
-}
-
-fn emoji_fills() -> Vec<String> {
-	vec![
-		"👋".to_string(),
-		"Liveviewjstest".to_string(),
-		"Use Text".to_string(),
-	]
-}
-
-fn text_fills() -> Vec<String> {
-	vec![
-		"Hello".to_string(),
-		"Liveviewjstest".to_string(),
-		"Use Emoji".to_string(),
-	]
 }
 
 #[cfg(test)]
 mod tests {
-	use crate::sample::{build_slices, emoji_fills};
+	use crate::lv::{Assigns, LiveView};
+	use crate::sample::SampleApp;
+	use crate::sample::SampleAppAssignKeys::UsingEmoji;
 
 	#[test]
 	fn test0() {
-		let vision = vision2(build_slices(emoji_fills()));
+		let mut assigns = Assigns::new();
+		assigns.assign(UsingEmoji, true.into());
+		let vision = SampleApp::render(&assigns);
 		let rendered = vision.to_phx_rendered();
 		let rendered = serde_json::to_string_pretty(&rendered).unwrap();
 		println!("{}", rendered)

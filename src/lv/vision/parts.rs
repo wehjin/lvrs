@@ -40,7 +40,7 @@ pub trait NodeList {
 	}
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Element {
 	name: String,
 	attributes: Vec<Attribute>,
@@ -89,7 +89,7 @@ impl NodeList for Element {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Attribute {
 	pub name: String,
 	pub value: String,
@@ -101,7 +101,7 @@ impl ToString for Attribute {
 	}
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Block {
 	pub value: String,
 }
@@ -112,7 +112,7 @@ impl ToString for Block {
 	}
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Node {
 	Element(Element),
 	Block(Block),

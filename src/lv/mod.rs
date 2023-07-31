@@ -7,7 +7,8 @@ pub mod app;
 mod value;
 mod state;
 pub(crate) mod phx;
-pub(crate) mod vision;
+#[macro_use]
+pub mod vision;
 
 use std::error::Error;
 use std::hash::Hash;
