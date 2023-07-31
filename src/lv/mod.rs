@@ -7,7 +7,7 @@ pub mod app;
 mod value;
 mod state;
 pub(crate) mod phx;
-pub(crate) mod vision2;
+pub(crate) mod vision;
 
 use std::error::Error;
 use std::hash::Hash;
@@ -15,7 +15,7 @@ use std::hash::Hash;
 pub use value::*;
 pub use state::*;
 use crate::lv::app::socket::Socket;
-use crate::lv::vision2::Vision;
+use crate::lv::vision::Vision;
 
 pub struct Session {}
 

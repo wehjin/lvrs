@@ -6,7 +6,7 @@ use crate::sample::{SampleApp, SampleAppAssignKey, SampleAppMsg, SampleAppParams
 use crate::lv::app::socket::Socket;
 use crate::lv::phx::{PhxEvent};
 use crate::lv::server::app_ws::AppWsMsg;
-use crate::lv::vision2::{Vision};
+use crate::lv::vision::{Vision};
 
 #[derive(Message)]
 #[rtype(result = "String")]

@@ -2,8 +2,8 @@ use std::error::Error;
 use crate::sample::SampleAppAssignKey::UsingEmoji;
 use crate::lv::{LiveView, Session, Assigns, Value};
 use crate::lv::app::socket::Socket;
-use crate::lv::vision2::{vision, Vision};
-use crate::lv::vision2::slice::{Slice, SliceListBuilder};
+use crate::lv::vision::{vision, Vision};
+use crate::lv::vision::slice::{Slice, SliceListBuilder};
 
 pub struct SampleAppParams {}
 

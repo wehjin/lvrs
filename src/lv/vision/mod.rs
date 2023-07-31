@@ -1,9 +1,9 @@
 pub(crate) mod slice;
 mod parts;
 
-use crate::lv::vision2::parts::{Block, Element, Node, NodeList, StaticsBuilder};
+use crate::lv::vision::parts::{Block, Element, Node, NodeList, StaticsBuilder};
 use serde_json::{Map, Value as JsonValue};
-use crate::lv::vision2::slice::Slice;
+use crate::lv::vision::slice::Slice;
 
 #[derive(Debug, Clone)]
 pub struct Vision {
