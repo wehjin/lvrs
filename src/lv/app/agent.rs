@@ -2,7 +2,7 @@ use actix::prelude::*;
 use actix::Message;
 use crate::lv::prelude::*;
 use crate::lv::{LiveView, Session};
-use crate::sample::{SampleApp, SampleAppAssignKey, SampleAppMsg, SampleAppParams};
+use crate::sample::{SampleApp, SampleAppAssignKeys, SampleAppMsg, SampleAppParams};
 use crate::lv::app::socket::Socket;
 use crate::lv::phx::{PhxEvent};
 use crate::lv::server::app_ws::AppWsMsg;
@@ -25,7 +25,7 @@ pub(crate) struct ToHtmlString;
 pub(crate) struct AppAgent {
 	params: SampleAppParams,
 	session: Session,
-	socket: Socket<SampleAppAssignKey>,
+	socket: Socket<SampleAppAssignKeys>,
 	vision: Vision,
 }
 

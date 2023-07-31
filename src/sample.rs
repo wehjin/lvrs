@@ -1,5 +1,5 @@
 use std::error::Error;
-use crate::sample::SampleAppAssignKey::UsingEmoji;
+use crate::sample::SampleAppAssignKeys::UsingEmoji;
 use crate::lv::{LiveView, Session, Assigns, Value};
 use crate::lv::app::socket::Socket;
 use crate::lv::vision::{vision, Vision};
@@ -10,21 +10,21 @@ pub struct SampleAppParams {}
 pub enum SampleAppMsg { Toggle }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub enum SampleAppAssignKey { UsingEmoji }
+pub enum SampleAppAssignKeys { UsingEmoji }
 
 pub struct SampleApp {}
 
 impl LiveView for SampleApp {
 	type Params = SampleAppParams;
 	type Msg = SampleAppMsg;
-	type StateKey = SampleAppAssignKey;
+	type AssignKeys = SampleAppAssignKeys;
 
-	fn mount(_params: &Self::Params, _session: &Session, socket: &Socket<Self::StateKey>) -> Result<Socket<Self::StateKey>, Box<dyn Error>> {
+	fn mount(_params: &Self::Params, _session: &Session, socket: &Socket<Self::AssignKeys>) -> Result<Socket<Self::AssignKeys>, Box<dyn Error>> {
 		let socket = socket.assign(UsingEmoji, Value::Bool(true));
 		Ok(socket)
 	}
 
-	fn handle_event(msg: Self::Msg, _params: &Self::Params, socket: &Socket<Self::StateKey>) -> Result<Socket<Self::StateKey>, Box<dyn Error>> {
+	fn handle_event(msg: Self::Msg, _params: &Self::Params, socket: &Socket<Self::AssignKeys>) -> Result<Socket<Self::AssignKeys>, Box<dyn Error>> {
 		match msg {
 			SampleAppMsg::Toggle => {
 				let socket = socket.update(UsingEmoji, Value::flip);
@@ -33,7 +33,7 @@ impl LiveView for SampleApp {
 		}
 	}
 
-	fn render(assigns: &Assigns<Self::StateKey>) -> Vision {
+	fn render(assigns: &Assigns<Self::AssignKeys>) -> Vision {
 		let using_emoji = assigns.read(&UsingEmoji).to_bool();
 		let fills = match using_emoji {
 			true => emoji_fills(),
