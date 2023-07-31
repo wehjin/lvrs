@@ -19,16 +19,6 @@ impl LiveView for SampleApp {
 	type Msg = SampleAppMsg;
 	type StateKey = SampleAppAssignKey;
 
-	fn render(assigns: &Assigns<Self::StateKey>) -> Vision {
-		let using_emoji = assigns.read(&UsingEmoji).to_bool();
-		let fills = match using_emoji {
-			true => emoji_fills(),
-			false => text_fills(),
-		};
-		let slices = build_slices(fills);
-		vision(slices)
-	}
-
 	fn mount(_params: &Self::Params, _session: &Session, socket: &Socket<Self::StateKey>) -> Result<Socket<Self::StateKey>, Box<dyn Error>> {
 		let socket = socket.assign(UsingEmoji, Value::Bool(true));
 		Ok(socket)
@@ -41,6 +31,16 @@ impl LiveView for SampleApp {
 				Ok(socket)
 			}
 		}
+	}
+
+	fn render(assigns: &Assigns<Self::StateKey>) -> Vision {
+		let using_emoji = assigns.read(&UsingEmoji).to_bool();
+		let fills = match using_emoji {
+			true => emoji_fills(),
+			false => text_fills(),
+		};
+		let slices = build_slices(fills);
+		vision(slices)
 	}
 }
 
