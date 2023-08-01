@@ -30,15 +30,15 @@ fn full_html(inner_html: String) -> String {
 		<!"DOCTYPE html">
 		<html lang="en" class="h-full bg-white">
 		<head>
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="csrf-token" content="jxKcN44bnz4To5EP-2dFN" />
-        <title data-suffix=" · lvrs">"lvrstest · lvrs"</title>
-        <!"-- LiveViewJS Client Javascript - compiled from src/client/index.ts --">
-        <script defer="" type="text/javascript" src="/index.js"></script>
-            <!"-- Tailwind CSS: we recommend replacing this with your own CSS --">
-        <script src="https://cdn.tailwindcss.com"></script>
+	        <meta charset="utf-8" />
+	        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	        <meta name="csrf-token" content="jxKcN44bnz4To5EP-2dFN" />
+	        <title data-suffix=" · lvrs">"lvrstest · lvrs"</title>
+	        <!"-- LiveViewJS Client Javascript - compiled from src/client/index.ts --">
+	        <script defer="" type="text/javascript" src="/index.js"></script>
+			<!"-- Tailwind CSS: we recommend replacing this with your own CSS --">
+	        <script src="https://cdn.tailwindcss.com"></script>
 		</head>
 		<body>
 			<!"-- Embedded LiveView --">
