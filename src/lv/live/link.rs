@@ -6,14 +6,14 @@ use crate::lv::LiveView;
 use crate::lv::server::assets;
 
 #[derive(Debug)]
-pub struct LiveApp<T: LiveView + 'static> {
+pub struct LiveLink<T: LiveView + 'static> {
 	addr: Addr<LiveAgent<T>>,
 }
 
-impl<T: LiveView + 'static> LiveApp<T> {
+impl<T: LiveView + 'static> LiveLink<T> {
 	pub fn start(params: T::Params) -> Self {
 		let addr = agent::start(params);
-		LiveApp { addr }
+		LiveLink { addr }
 	}
 
 	pub(crate) fn as_agent(&self) -> &Addr<LiveAgent<T>> { &self.addr }

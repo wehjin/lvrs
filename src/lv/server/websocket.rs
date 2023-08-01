@@ -10,7 +10,7 @@ use crate::lv::LiveView;
 pub(crate) enum WebsocketMsg { PhxReply(JsonValue) }
 
 pub(crate) struct Websocket<T: LiveView + 'static> {
-	app_agent: Addr<LiveAgent<T>>,
+	live_link: Addr<LiveAgent<T>>,
 }
 
 impl<T: LiveView + 'static> Actor for Websocket<T> {
@@ -41,7 +41,7 @@ impl<T: LiveView + 'static> StreamHandler<Result<ws::Message, ws::ProtocolError>
 					Message::Text(text) => {
 						let request: JsonValue = serde_json::from_str(&text.to_string()).unwrap();
 						let replier = ctx.address().recipient();
-						self.app_agent.do_send(LiveAgentMsg::PhxRequest { request, requester: replier });
+						self.live_link.do_send(LiveAgentMsg::PhxRequest { request, requester: replier });
 					}
 					Message::Binary(bin) => ctx.binary(bin),
 					Message::Continuation(_) => ctx.stop(),
@@ -61,7 +61,7 @@ impl<T: LiveView + 'static> StreamHandler<Result<ws::Message, ws::ProtocolError>
 
 impl<T: LiveView + 'static> Websocket<T> {
 	pub fn new(live_agent: Addr<LiveAgent<T>>) -> Self {
-		Websocket { app_agent: live_agent }
+		Websocket { live_link: live_agent }
 	}
 }
 
