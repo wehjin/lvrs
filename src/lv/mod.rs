@@ -2,13 +2,13 @@ pub mod prelude {
 	pub type JsonValue = serde_json::Value;
 }
 
+#[macro_use]
+pub mod vision;
 pub mod server;
 pub mod live;
 mod value;
 mod state;
 pub(crate) mod phx;
-#[macro_use]
-pub mod vision;
 
 use std::error::Error;
 use std::fmt::{Debug, Display};

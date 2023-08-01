@@ -110,6 +110,15 @@ impl From<Vec<Slice>> for Vision {
 					}
 					insert_text_before_block = false;
 				}
+				Slice::AddDirective(text) => {
+					if let Some(mut parent) = open_element.take() {
+						parent.add_directive(text);
+						open_element = Some(parent);
+					} else {
+						vision.add_directive(text);
+					}
+					insert_text_before_block = false;
+				}
 			}
 		}
 		vision

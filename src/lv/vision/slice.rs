@@ -5,6 +5,7 @@ pub(crate) enum Slice {
 	AddAttribute(String, String),
 	AddBlock(String),
 	AddText(String),
+	AddDirective(String),
 }
 
 #[cfg(test)]

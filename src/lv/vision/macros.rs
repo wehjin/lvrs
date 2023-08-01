@@ -9,6 +9,13 @@ macro_rules! vision {
 		}
 	};
 	(1) => {Vec::new()};
+	(1 <! $literal:literal >  $($tail:tt)*) => {
+		{
+			let mut vec = vec![Slice::AddDirective($literal.to_string())];
+			vec.extend(vision!(1 $($tail)*));
+			vec
+		}
+	};
 	(1 </ $name:ident > $($tail:tt)*) => {
 		{
 			let mut vec = vec![Slice::CloseElement(stringify!($name).to_string())];
@@ -28,6 +35,33 @@ macro_rules! vision {
 			let mut lv_macros_vec = vec![Slice::AddBlock($block.to_string())];
 			lv_macros_vec.extend(vision!(1 $($tail)*));
 			lv_macros_vec
+		}
+	};
+	(
+		1
+		< meta $($( $attr_name:ident )-+ = $lit:literal)* />
+		$($tail:tt)*
+	) => {
+		{
+			let mut temp_slices = Vec::new();
+			temp_slices.push(Slice::OpenElement("meta".to_string()));
+			$(
+				temp_slices.push(
+					Slice::AddAttribute(
+						{
+							let mut temp_names = Vec::new();
+							$(
+								temp_names.push(stringify!($attr_name).to_string());
+							)+
+							temp_names.join("-")
+						},
+						$lit.to_string()
+					)
+				);
+			)*
+			temp_slices.push(Slice::CloseElement("meta".to_string()));
+			temp_slices.extend(vision!(1 $($tail)*));
+			temp_slices
 		}
 	};
 	(

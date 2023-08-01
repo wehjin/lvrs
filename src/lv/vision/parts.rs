@@ -25,10 +25,14 @@ pub trait NodeList {
 		let node = Node::Text(string);
 		self.add_node(node);
 	}
+	fn add_directive(&mut self, string: String) {
+		let node = Node::Directive(string);
+		self.add_node(node)
+	}
 	fn nodes_to_string(&self) -> String {
 		let mut string = String::new();
 		for node in self.nodes() {
-			let more = format!("{}\n", node.to_string());
+			let more = format!("{}", node.to_string());
 			string.push_str(&more);
 		}
 		string
@@ -60,13 +64,21 @@ impl Element {
 			let more = format!(" {}", attr.to_string());
 			attrs_string.push_str(&more);
 		}
-		attrs_string
+		attrs_string.trim().to_string()
 	}
 	fn to_entrance_string(&self) -> String {
 		let attrs_string = self.to_attributes_string();
-		format!("<{}{}>", &self.name, attrs_string)
+		if attrs_string.is_empty() {
+			format!("<{}>", &self.name)
+		} else {
+			format!("<{} {}>", &self.name, attrs_string)
+		}
 	}
 	fn to_exit_string(&self) -> String { format!("</{}>", &self.name) }
+	fn to_meta_string(&self) -> String {
+		let attrs_string = self.to_attributes_string();
+		format!("<meta {} />\n", attrs_string)
+	}
 
 	fn add_to_statics(&self, builder: &mut StaticsBuilder) {
 		builder.add_static(&self.to_entrance_string());
@@ -77,7 +89,16 @@ impl Element {
 
 impl ToString for Element {
 	fn to_string(&self) -> String {
-		format!("{}{}{}", self.to_entrance_string(), self.nodes_to_string(), self.to_exit_string())
+		if self.name == "meta" {
+			self.to_meta_string()
+		} else {
+			let gap = if self.child_nodes.len() < 2 {
+				""
+			} else {
+				"\n"
+			};
+			format!("{}{}{}{}{}\n", self.to_entrance_string(), &gap, self.nodes_to_string(), &gap, self.to_exit_string())
+		}
 	}
 }
 
@@ -97,7 +118,11 @@ pub struct Attribute {
 
 impl ToString for Attribute {
 	fn to_string(&self) -> String {
-		format!("{}=\"{}\"", &self.name, &self.value)
+		if self.value.is_empty() && !self.name.starts_with("data-") {
+			format!("{}", &self.name)
+		} else {
+			format!("{}=\"{}\"", &self.name, &self.value)
+		}
 	}
 }
 
@@ -117,6 +142,7 @@ pub enum Node {
 	Element(Element),
 	Block(Block),
 	Text(String),
+	Directive(String),
 }
 
 impl Node {
@@ -125,13 +151,15 @@ impl Node {
 			Node::Element(el) => el.add_to_statics(builder),
 			Node::Block(_) => builder.add_dynamic(),
 			Node::Text(s) => builder.add_static(s),
+			Node::Directive(_) => builder.add_static(&self.to_string()),
 		}
 	}
 	pub(crate) fn get_blocks<'a>(&'a self, blocks: &mut Vec<&'a Block>) {
 		match self {
 			Node::Element(el) => el.get_nodelist_blocks(blocks),
 			Node::Block(b) => blocks.push(b),
-			Node::Text(_) => ()
+			Node::Text(_) => (),
+			Node::Directive(_) => (),
 		}
 	}
 }
@@ -142,6 +170,7 @@ impl ToString for Node {
 			Node::Element(el) => el.to_string(),
 			Node::Block(b) => b.to_string(),
 			Node::Text(t) => t.to_string(),
+			Node::Directive(s) => format!("<!{}>\n", s),
 		}
 	}
 }
