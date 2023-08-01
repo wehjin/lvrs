@@ -7,51 +7,62 @@ use actix_web_actors::ws as actix_ws;
 use crate::lv::live::link::LiveLink;
 use crate::lv::LiveView;
 use crate::lv::server::websocket::Websocket;
-use crate::sample::{SampleApp};
 
-pub(crate) async fn start<T: LiveView + 'static>(params: T::Params) -> Result<(), Box<dyn Error>>
+#[derive(Debug, Clone)]
+pub struct Route(String);
+
+impl Route {
+	pub fn new(s: impl AsRef<str>) -> Self {
+		Route(s.as_ref().to_string())
+	}
+	pub fn path(&self) -> &str {
+		&self.0
+	}
+	pub fn to_url(&self, host: impl AsRef<str>, port: u16) -> String {
+		format!("http://{}:{}{}", host.as_ref(), port, self.0)
+	}
+}
+
+const HOST: &str = "127.0.0.1";
+const PORT: u16 = 8000;
+const WEBSOCKET_PATH: &str = "/live/websocket";
+
+pub async fn start<T: LiveView + 'static>(params: T::Params, route: Route) -> Result<(), Box<dyn Error>>
 {
-	let host = "127.0.0.1";
-	let port = 8000;
-	println!("Listening at http://{}:{}/rs", host, port);
 	let live_app = web::Data::new(LiveLink::<T>::start(params));
+	let route_url = route.to_url(HOST, PORT);
+	println!("Listening at {}", route_url);
 	HttpServer::new(move || {
-		let app = App::new()
+		App::new()
 			.app_data(live_app.clone())
-			.service(index)
 			.service(index_js)
 			.service(index_js_map)
-			.service(live_websocket);
-		app
-	}).bind((host, port))?.run().await?;
+			.service(web::resource(route.path()).route(web::get().to(index::<T>)))
+			.service(web::resource(WEBSOCKET_PATH).route(web::get().to(live_websocket::<T>)))
+	}).bind((HOST, PORT))?.run().await?;
 	Ok(())
 }
 
-#[get("/index.js")]
-async fn index_js() -> impl Responder {
-	let s = include_str!("index.js");
-	HttpResponse::Ok().body(s)
-}
-
-#[get("/rs")]
-async fn index(live_link: web::Data<LiveLink<SampleApp>>) -> impl Responder {
-	// TODO Remove SampleApp from signature
+async fn index<T: LiveView + 'static>(live_link: web::Data<LiveLink<T>>) -> impl Responder {
 	match live_link.html_string().await {
 		Ok(html) => HttpResponse::Ok().body(html),
 		Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
 	}
 }
 
-#[get("/index.js.map")]
-async fn index_js_map() -> impl Responder {
-	let s = include_str!("index.js.map");
+async fn live_websocket<T: LiveView + 'static>(req: HttpRequest, stream: web::Payload, live_link: web::Data<LiveLink<T>>) -> impl Responder {
+	let live_ws = Websocket::new(live_link.as_agent().clone());
+	actix_ws::start(live_ws, &req, stream)
+}
+
+#[get("/index.js")]
+async fn index_js() -> impl Responder {
+	let s = include_str!("assets/index.js");
 	HttpResponse::Ok().body(s)
 }
 
-#[get("/live/websocket")]
-async fn live_websocket(req: HttpRequest, stream: web::Payload, live_link: web::Data<LiveLink<SampleApp>>) -> impl Responder {
-	// TODO Remove SampleApp from signature
-	let live_ws = Websocket::new(live_link.as_agent().clone());
-	let resp = actix_ws::start(live_ws, &req, stream);
-	resp
+#[get("/index.js.map")]
+async fn index_js_map() -> impl Responder {
+	let s = include_str!("assets/index.js.map");
+	HttpResponse::Ok().body(s)
 }
