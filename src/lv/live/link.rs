@@ -26,6 +26,7 @@ impl<T: LiveView + 'static> LiveLink<T> {
 }
 
 fn full_html(inner_html: String) -> String {
+	// TODO fix csrf and session data
 	let vision: Vision = vision! {
 		<!"DOCTYPE html">
 		<html lang="en" class="h-full bg-white">
