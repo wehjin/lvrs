@@ -2,26 +2,27 @@ use actix::{Actor, ActorContext, Addr, AsyncContext, Handler, StreamHandler};
 use actix_web_actors::ws;
 use actix_web_actors::ws::{Message};
 use serde_json::Value as JsonValue;
-use crate::lv::app::agent::{AppAgent, AppAgentMsg};
+use crate::lv::live::agent::{LiveAgent, LiveAgentMsg};
+use crate::lv::LiveView;
 
 #[derive(actix::Message)]
 #[rtype(result = "()")]
-pub(crate) enum AppWsMsg { PhxReply(JsonValue) }
+pub(crate) enum WebsocketMsg { PhxReply(JsonValue) }
 
-pub(crate) struct AppWs {
-	app_agent: Addr<AppAgent>,
+pub(crate) struct Websocket<T: LiveView + 'static> {
+	app_agent: Addr<LiveAgent<T>>,
 }
 
-impl Actor for AppWs {
+impl<T: LiveView + 'static> Actor for Websocket<T> {
 	type Context = ws::WebsocketContext<Self>;
 }
 
-impl Handler<AppWsMsg> for AppWs {
+impl<T: LiveView + 'static> Handler<WebsocketMsg> for Websocket<T> {
 	type Result = ();
 
-	fn handle(&mut self, msg: AppWsMsg, ctx: &mut Self::Context) -> Self::Result {
+	fn handle(&mut self, msg: WebsocketMsg, ctx: &mut Self::Context) -> Self::Result {
 		match msg {
-			AppWsMsg::PhxReply(reply) => {
+			WebsocketMsg::PhxReply(reply) => {
 				eprintln!("WEBSOCKET REPLY: {}", &reply);
 				ctx.text(reply.to_string())
 			}
@@ -29,7 +30,9 @@ impl Handler<AppWsMsg> for AppWs {
 	}
 }
 
-impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for AppWs {
+impl<T: LiveView + 'static> StreamHandler<Result<ws::Message, ws::ProtocolError>> for Websocket<T>
+
+{
 	fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
 		eprintln!("---\nWEBSOCKET MSG: {:?}", msg);
 		match msg {
@@ -38,7 +41,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for AppWs {
 					Message::Text(text) => {
 						let request: JsonValue = serde_json::from_str(&text.to_string()).unwrap();
 						let replier = ctx.address().recipient();
-						self.app_agent.do_send(AppAgentMsg::PhxRequest { request, requester: replier });
+						self.app_agent.do_send(LiveAgentMsg::PhxRequest { request, requester: replier });
 					}
 					Message::Binary(bin) => ctx.binary(bin),
 					Message::Continuation(_) => ctx.stop(),
@@ -56,9 +59,9 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for AppWs {
 	}
 }
 
-impl AppWs {
-	pub fn new(app_worker: Addr<AppAgent>) -> Self {
-		AppWs { app_agent: app_worker }
+impl<T: LiveView + 'static> Websocket<T> {
+	pub fn new(live_agent: Addr<LiveAgent<T>>) -> Self {
+		Websocket { app_agent: live_agent }
 	}
 }
 

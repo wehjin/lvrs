@@ -1,17 +1,28 @@
 use std::error::Error;
 use crate::sample::SampleAppAssignKeys::UsingEmoji;
-use crate::lv::{LiveView, Session, Assigns, Value};
-use crate::lv::app::socket::Socket;
+use crate::lv::{LiveView, Session, Assigns, Value, LiveMsg};
+use crate::lv::live::socket::Socket;
 use crate::lv::vision::{Vision};
 
-pub struct SampleAppParams {}
+pub struct SampleAppParams;
 
 pub enum SampleAppMsg { Toggle }
+
+impl LiveMsg for SampleAppMsg {
+	type Err = String;
+
+	fn from_str(s: impl AsRef<str>) -> Result<Self, Self::Err> {
+		match s.as_ref() {
+			"toggle" => Ok(SampleAppMsg::Toggle),
+			&_ => Err(format!("no msg for \"{}\"", s.as_ref())),
+		}
+	}
+}
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum SampleAppAssignKeys { UsingEmoji }
 
-pub struct SampleApp {}
+pub struct SampleApp;
 
 impl LiveView for SampleApp {
 	type Params = SampleAppParams;
