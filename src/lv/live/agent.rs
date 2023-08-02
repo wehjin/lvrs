@@ -78,6 +78,7 @@ impl<T: LiveView + 'static> LiveAgent<T>
 				Some(phx.context().to_phx_reply(json))
 			}
 			PhxEvent::Join(_, _) => {
+				// TODO Check csrf token and start live-view agent.
 				let json = json!({"rendered": self.vision.to_phx_rendered()});
 				Some(phx.context().to_phx_reply(json))
 			}

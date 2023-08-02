@@ -37,9 +37,58 @@ macro_rules! vision {
 			lv_macros_vec
 		}
 	};
+	(1 < $name:ident $($tail:tt)*) => {
+		{
+			let mut lv_macros_vec = vec![Slice::OpenElement(stringify!($name).to_string())];
+			lv_macros_vec.extend(vision!(2 $($tail)*));
+			lv_macros_vec
+		}
+	};
+	(2 $attr_name:ident $($tail:tt)*) => {
+		{
+			let mut lv_macros_vec = vec![Slice::AddAttributeName(stringify!($attr_name).to_string())];
+			lv_macros_vec.extend(vision!(2 $($tail)*));
+			lv_macros_vec
+		}
+	};
+	(2 - $attr_name:ident $($tail:tt)*) => {
+		{
+			let mut lv_macros_vec = vec![Slice::AddAttributeNameExtension(stringify!($attr_name).to_string())];
+			lv_macros_vec.extend(vision!(2 $($tail)*));
+			lv_macros_vec
+		}
+	};
+	(2 = $block:block $($tail:tt)*) => {
+		{
+			let mut lv_macros_vec = vec![Slice::AddAttributeBlock($block.to_string())];
+			lv_macros_vec.extend(vision!(2 $($tail)*));
+			lv_macros_vec
+		}
+	};
+	(2 = $lit:literal $($tail:tt)*) => {
+		{
+			let mut lv_macros_vec = vec![Slice::AddAttributeText($lit.to_string())];
+			lv_macros_vec.extend(vision!(2 $($tail)*));
+			lv_macros_vec
+		}
+	};
+	(2 / > $($tail:tt)*) => {
+		{
+			let mut lv_macros_vec = vec![Slice::AddEOAClose];
+			lv_macros_vec.extend(vision!(1 $($tail)*));
+			lv_macros_vec
+		}
+	};
+	(2 > $($tail:tt)*) => {
+		{
+			let mut lv_macros_vec = vec![Slice::AddEOAOpen];
+			lv_macros_vec.extend(vision!(1 $($tail)*));
+			lv_macros_vec
+		}
+	};
 	(
 		1
-		< meta $($( $attr_name:ident )-+ = $lit:literal)* />
+		< meta $( = $lit:literal)* />
 		$($tail:tt)*
 	) => {
 		{
@@ -173,7 +222,8 @@ pub(crate) mod tests {
 			self
 		}
 		pub fn add_attr(&mut self, name: &str, value: &str) -> &mut Self {
-			self.slices.push(Slice::AddAttribute(name.to_string(), value.to_string()));
+			self.slices.push(Slice::AddAttributeName(name.to_string()));
+			self.slices.push(Slice::AddAttributeText(value.to_string()));
 			self
 		}
 		pub fn add_open_with_attrs(&mut self, name: &str, attrs: Vec<(&str, &str)>) -> &mut Self {

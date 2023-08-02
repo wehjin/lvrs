@@ -55,7 +55,7 @@ impl Element {
 	pub fn new(name: String) -> Self {
 		Element { name, attributes: Vec::new(), child_nodes: Vec::new() }
 	}
-	pub fn add_attribute(&mut self, name: String, value: String) {
+	pub fn add_attribute(&mut self, name: String, value: AttributeValue) {
 		self.attributes.push(Attribute { name, value })
 	}
 	fn to_attributes_string(&self) -> String {
@@ -109,19 +109,31 @@ impl NodeList for Element {
 	}
 }
 
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum AttributeValue {
+	Block(String),
+	String(String),
+	None,
+}
+
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Attribute {
 	pub name: String,
-	pub value: String,
+	pub value: AttributeValue,
 }
 
 impl ToString for Attribute {
 	fn to_string(&self) -> String {
-		if self.value.is_empty() && !self.name.starts_with("data-") {
-			format!("{}", &self.name)
+		let value = match &self.value {
+			AttributeValue::Block(value) => Some(value),
+			AttributeValue::String(string) => Some(string),
+			AttributeValue::None => None,
+		};
+		if let Some(value) = value {
+			format!("{}=\"{}\"", &self.name, value)
 		} else {
-			format!("{}=\"{}\"", &self.name, &self.value)
+			format!("{}", &self.name)
 		}
 	}
 }

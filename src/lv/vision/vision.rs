@@ -1,4 +1,4 @@
-use crate::lv::vision::parts::{Block, Element, Node, NodeList, StaticsBuilder};
+use crate::lv::vision::parts::{AttributeValue, Block, Element, Node, NodeList, StaticsBuilder};
 use serde_json::{Map, Value as JsonValue};
 use crate::lv::vision::slice::Slice;
 
@@ -50,77 +50,143 @@ impl NodeList for Vision {
 
 impl From<Vec<Slice>> for Vision {
 	fn from(slices: Vec<Slice>) -> Self {
-		let mut vision = Vision::new();
-		let mut open_element: Option<Element> = None;
-		let mut parents: Vec<Element> = Vec::new();
-		let mut insert_text_before_block = false;
-		for slice in slices {
-			match slice {
-				Slice::OpenElement(name) => {
-					if let Some(parent) = open_element.take() {
-						parents.push(parent);
-					}
-					open_element = Some(Element::new(name));
-					insert_text_before_block = false;
+		struct Cursor {
+			pub vision: Vision,
+			pub parents: Vec<Element>,
+			pub insert_text_before_block: bool,
+			pub active_element: Option<Element>,
+			pub active_attr_name: Vec<String>,
+		}
+		impl Cursor {
+			pub fn start_open_element(&mut self, name: String) {
+				if let Some(element) = self.active_element.take() {
+					self.parents.push(element);
 				}
-				Slice::CloseElement(_name) => {
-					if let Some(child) = open_element.take() {
-						if let Some(mut parent) = parents.pop() {
-							parent.add_element(child);
-							open_element = Some(parent);
-						} else {
-							vision.add_element(child);
-							open_element = None;
-						}
-						insert_text_before_block = false;
+				self.active_element = Some(Element::new(name));
+				self.active_attr_name.clear();
+			}
+			pub fn finish_previous_attr(&mut self, value: AttributeValue) {
+				if self.active_attr_name.len() > 0 {
+					if let Some(mut element) = self.active_element.take() {
+						element.add_attribute(self.active_attr_name.join("-"), value);
+						self.active_element = Some(element);
 					} else {
-						panic!("exit requires previous entrance")
+						panic!("finishing an attribute requires active element")
 					}
 				}
-				Slice::AddAttribute(name, value) => {
-					if let Some(mut parent) = open_element.take() {
-						parent.add_attribute(name, value);
-						open_element = Some(parent);
-					} else {
-						panic!("attribute requires previous entrance")
-					}
+				self.active_attr_name.clear();
+			}
+			pub fn start_attr_name(&mut self, name: String) {
+				self.finish_previous_attr(AttributeValue::None);
+				self.active_attr_name = vec![name];
+			}
+			pub fn extend_attr_name(&mut self, extension: String) {
+				self.active_attr_name.push(extension);
+			}
+			pub fn end_attr_with_value(&mut self, value: AttributeValue) {
+				self.finish_previous_attr(value);
+				self.active_attr_name.clear();
+			}
+			pub fn finish_open_element(&mut self, and_close_element: bool) {
+				self.finish_previous_attr(AttributeValue::None);
+				self.insert_text_before_block = false;
+				if and_close_element {
+					self.close_element();
 				}
-				Slice::AddBlock(value) => {
-					vision.add_fill(value.to_string());
-					if let Some(mut parent) = open_element.take() {
-						if insert_text_before_block {
-							parent.add_text(" ".into());
-						}
-						parent.add_block(Block { value });
-						open_element = Some(parent);
-					} else {
-						if insert_text_before_block {
-							vision.add_text(" ".into());
-						}
-						vision.add_block(Block { value });
-					}
-					insert_text_before_block = true;
+			}
+			pub fn add_text(&mut self, text: String) {
+				if let Some(mut element) = self.active_element.take() {
+					element.add_text(text);
+					self.active_element = Some(element);
+				} else {
+					self.vision.add_text(text);
 				}
-				Slice::AddText(text) => {
-					if let Some(mut parent) = open_element.take() {
-						parent.add_text(text);
-						open_element = Some(parent);
-					} else {
-						vision.add_text(text);
+				self.insert_text_before_block = false;
+			}
+			pub fn add_block(&mut self, value: String) {
+				self.vision.add_fill(value.to_string());
+				if let Some(mut element) = self.active_element.take() {
+					if self.insert_text_before_block {
+						element.add_text(" ".into());
 					}
-					insert_text_before_block = false;
+					element.add_block(Block { value });
+					self.active_element = Some(element);
+				} else {
+					if self.insert_text_before_block {
+						self.vision.add_text(" ".into());
+					}
+					self.vision.add_block(Block { value });
 				}
-				Slice::AddDirective(text) => {
-					if let Some(mut parent) = open_element.take() {
-						parent.add_directive(text);
-						open_element = Some(parent);
+				self.insert_text_before_block = true;
+			}
+			pub fn add_directive(&mut self, text: String) {
+				if let Some(mut element) = self.active_element.take() {
+					element.add_directive(text);
+					self.active_element = Some(element);
+				} else {
+					self.vision.add_directive(text);
+				}
+				self.insert_text_before_block = false;
+			}
+			pub fn close_element(&mut self) {
+				if let Some(element) = self.active_element.take() {
+					if let Some(mut parent) = self.parents.pop() {
+						parent.add_element(element);
+						self.active_element = Some(parent);
 					} else {
-						vision.add_directive(text);
+						self.vision.add_element(element);
+						self.active_element = None;
 					}
-					insert_text_before_block = false;
+					self.insert_text_before_block = false;
+				} else {
+					panic!("exit requires previous entrance")
 				}
 			}
 		}
-		vision
+		let mut cursor = Cursor {
+			vision: Vision::new(),
+			parents: Vec::new(),
+			insert_text_before_block: false,
+			active_element: None,
+			active_attr_name: Vec::new(),
+		};
+		for slice in slices {
+			match slice {
+				Slice::OpenElement(name) => {
+					cursor.start_open_element(name);
+				}
+				Slice::AddAttributeName(name) => {
+					cursor.start_attr_name(name);
+				}
+				Slice::AddAttributeNameExtension(extension) => {
+					cursor.extend_attr_name(extension);
+				}
+				Slice::AddAttributeBlock(block) => {
+					cursor.end_attr_with_value(AttributeValue::Block(block))
+				}
+				Slice::AddAttributeText(string) => {
+					cursor.end_attr_with_value(AttributeValue::String(string))
+				}
+				Slice::AddEOAOpen => {
+					cursor.finish_open_element(false);
+				}
+				Slice::AddEOAClose => {
+					cursor.finish_open_element(true);
+				}
+				Slice::AddText(text) => {
+					cursor.add_text(text);
+				}
+				Slice::CloseElement(_name) => {
+					cursor.close_element();
+				}
+				Slice::AddBlock(value) => {
+					cursor.add_block(value);
+				}
+				Slice::AddDirective(text) => {
+					cursor.add_directive(text);
+				}
+			}
+		}
+		cursor.vision
 	}
 }
