@@ -1,9 +1,10 @@
+#[macro_export]
 macro_rules! vision {
 
 	(< $($tail:tt)*) => {
 		{
-			use $crate::lv::vision::slice::{Slice};
-			use $crate::lv::vision::Vision;
+			use $crate::vision::slice::{Slice};
+			use $crate::vision::Vision;
 			let slices = vision!(1 < $($tail)*);
 			Vision::from(slices)
 		}
@@ -144,8 +145,8 @@ macro_rules! vision {
 
 #[cfg(test)]
 pub(crate) mod tests {
-	use crate::lv::vision::slice::{Slice};
-	use crate::lv::vision::Vision;
+	use crate::vision::slice::{Slice};
+	use crate::vision::Vision;
 
 	#[test]
 	fn success() {

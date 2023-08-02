@@ -1,11 +1,11 @@
 use actix::prelude::*;
 use actix::Message;
-use crate::lv::prelude::*;
-use crate::lv::{LiveMsg, LiveView, Session};
-use crate::lv::live::socket::Socket;
-use crate::lv::phx::{PhxEvent};
-use crate::lv::server::websocket::WebsocketMsg;
-use crate::lv::vision::{Vision};
+use crate::prelude::*;
+use crate::{LiveMsg, LiveView, Session};
+use crate::live::socket::Socket;
+use crate::phx::{PhxEvent};
+use crate::server::websocket::WebsocketMsg;
+use crate::vision::{Vision};
 
 pub(crate) fn start<T: LiveView + 'static>(params: T::Params) -> Addr<LiveAgent<T>> {
 	let actor = LiveAgent::new(params);

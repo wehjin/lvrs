@@ -1,5 +1,5 @@
 #[derive(Debug)]
-pub(crate) enum Slice {
+pub enum Slice {
 	OpenElement(String),
 	AddAttributeName(String),
 	AddAttributeNameExtension(String),

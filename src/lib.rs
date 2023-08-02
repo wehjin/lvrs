@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate serde_json;
+
 pub mod prelude {
 	pub type JsonValue = serde_json::Value;
 }
@@ -16,8 +19,8 @@ use std::hash::Hash;
 
 pub use value::*;
 pub use state::*;
-use crate::lv::live::socket::Socket;
-use crate::lv::vision::Vision;
+use crate::live::socket::Socket;
+use crate::vision::Vision;
 
 pub struct Session {}
 

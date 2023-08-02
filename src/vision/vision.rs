@@ -1,6 +1,6 @@
-use crate::lv::vision::parts::{AttributeValue, Block, Element, Node, NodeList, StaticsBuilder};
+use crate::vision::parts::{AttributeValue, Block, Element, Node, NodeList, StaticsBuilder};
 use serde_json::{Map, Value as JsonValue};
-use crate::lv::vision::slice::Slice;
+use crate::vision::slice::Slice;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Vision {

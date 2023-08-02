@@ -2,8 +2,8 @@ use actix::{Actor, ActorContext, Addr, AsyncContext, Handler, StreamHandler};
 use actix_web_actors::ws;
 use actix_web_actors::ws::{Message};
 use serde_json::Value as JsonValue;
-use crate::lv::live::agent::{LiveAgent, LiveAgentMsg};
-use crate::lv::LiveView;
+use crate::live::agent::{LiveAgent, LiveAgentMsg};
+use crate::LiveView;
 
 #[derive(actix::Message)]
 #[rtype(result = "()")]

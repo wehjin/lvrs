@@ -1,6 +1,6 @@
-pub(crate) mod slice;
 #[macro_use]
 pub mod macros;
+pub mod slice;
 mod vision;
 mod parts;
 

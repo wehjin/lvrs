@@ -1,8 +1,19 @@
+#[macro_use]
+extern crate lv;
+
+use lv::server::{Route};
+
 use std::error::Error;
-use crate::sample::SampleAppAssignKeys::UsingEmoji;
-use crate::lv::{LiveView, Session, Assigns, Value, LiveMsg};
-use crate::lv::live::socket::Socket;
-use crate::lv::vision::{Vision};
+use lv::{Assigns, LiveMsg, LiveView, Session, Value};
+use lv::live::socket::Socket;
+use lv::vision::Vision;
+use crate::SampleAppAssignKeys::UsingEmoji;
+
+#[actix_web::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+	let route = Route::new("/hello");
+	lv::server::start::<SampleApp>(SampleAppParams, route).await
+}
 
 pub struct SampleAppParams;
 
@@ -71,9 +82,9 @@ impl LiveView for SampleApp {
 
 #[cfg(test)]
 mod tests {
-	use crate::lv::{Assigns, LiveView};
-	use crate::sample::SampleApp;
-	use crate::sample::SampleAppAssignKeys::UsingEmoji;
+	use lv::{Assigns, LiveView};
+	use super::SampleApp;
+	use super::SampleAppAssignKeys::UsingEmoji;
 
 	#[test]
 	fn test0() {

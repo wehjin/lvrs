@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::hash::Hash;
-use crate::lv::Value;
+use crate::Value;
 
 #[derive(Debug, Clone)]
 pub struct Assigns<K: Eq + Hash + Clone> {

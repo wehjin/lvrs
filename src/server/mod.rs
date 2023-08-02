@@ -4,9 +4,9 @@ pub(crate) mod websocket;
 use std::error::Error;
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder, HttpRequest};
 use actix_web_actors::ws as actix_ws;
-use crate::lv::live::link::LiveLink;
-use crate::lv::LiveView;
-use crate::lv::server::websocket::Websocket;
+use crate::live::link::LiveLink;
+use crate::LiveView;
+use crate::server::websocket::Websocket;
 
 #[derive(Debug, Clone)]
 pub struct Route(String);

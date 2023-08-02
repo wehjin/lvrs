@@ -1,10 +1,10 @@
 use std::error::Error;
 use actix::Addr;
 use uuid::Uuid;
-use crate::lv::live::agent;
-use crate::lv::live::agent::{LiveAgent, ToHtmlString};
-use crate::lv::LiveView;
-use crate::lv::vision::{Vision};
+use crate::live::agent;
+use crate::live::agent::{LiveAgent, ToHtmlString};
+use crate::LiveView;
+use crate::vision::{Vision};
 
 #[derive(Debug)]
 pub struct LiveLink<T: LiveView + 'static> {
@@ -61,8 +61,8 @@ fn full_html(inner_html: impl AsRef<str>, csrf: impl AsRef<str>) -> String {
 
 #[cfg(test)]
 mod tests {
-	use crate::lv::live::link::full_html;
-	use crate::lv::server::assets;
+	use crate::live::link::full_html;
+	use crate::server::assets;
 
 	#[test]
 	fn check_full_html() {

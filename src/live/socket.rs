@@ -1,5 +1,5 @@
 use std::hash::Hash;
-use crate::lv::{Assigns, Value};
+use crate::{Assigns, Value};
 
 #[derive(Debug, Clone)]
 pub struct Socket<K: Eq + Hash + Clone> {
