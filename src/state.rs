@@ -2,12 +2,12 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use crate::Value;
 
-#[derive(Debug, Clone)]
-pub struct Assigns<K: Eq + Hash + Clone> {
+#[derive(Debug)]
+pub struct Assigns<K: Eq + Hash> {
 	assigns: HashMap<K, (Value, usize)>,
 }
 
-impl<K: Eq + Hash + Clone> Assigns<K> {
+impl<K: Eq + Hash> Assigns<K> {
 	pub fn new() -> Self {
 		Assigns { assigns: HashMap::new() }
 	}

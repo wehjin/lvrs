@@ -41,17 +41,20 @@ impl LiveView for SampleApp {
 	type AssignKeys = SampleAppAssignKeys;
 
 	fn mount(_params: &Self::Params, _session: &Session, socket: Socket<Self::AssignKeys>) -> Result<Socket<Self::AssignKeys>, Box<dyn Error>> {
-		let socket = socket.assign(UsingEmoji, Value::Bool(true));
+		let mut socket = socket;
+		socket.assign(UsingEmoji, Value::Bool(true));
 		Ok(socket)
 	}
 
 	fn handle_event(msg: Self::Msg, _params: &Self::Params, socket: Socket<Self::AssignKeys>) -> Result<Socket<Self::AssignKeys>, Box<dyn Error>> {
-		match msg {
+		let socket = match msg {
 			SampleAppMsg::Toggle => {
-				let socket = socket.update(UsingEmoji, Value::flip);
-				Ok(socket)
+				let mut socket = socket;
+				socket.update(UsingEmoji, Value::flip);
+				socket
 			}
-		}
+		};
+		Ok(socket)
 	}
 
 	fn render(assigns: &Assigns<Self::AssignKeys>) -> Vision {
