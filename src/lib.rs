@@ -1,12 +1,13 @@
 #[macro_use]
 extern crate serde_json;
 
+#[macro_use]
+pub mod vision;
+
 pub mod prelude {
 	pub type JsonValue = serde_json::Value;
 }
 
-#[macro_use]
-pub mod vision;
 pub mod server;
 pub mod live;
 mod value;
@@ -34,8 +35,8 @@ pub trait LiveView {
 	type Msg: LiveMsg;
 	type AssignKeys: Debug + Clone + Eq + Hash + Unpin;
 
-	fn mount(params: &Self::Params, session: &Session, socket: &Socket<Self::AssignKeys>) -> Result<Socket<Self::AssignKeys>, Box<dyn Error>>;
-	fn handle_event(msg: Self::Msg, params: &Self::Params, socket: &Socket<Self::AssignKeys>) -> Result<Socket<Self::AssignKeys>, Box<dyn Error>>;
+	fn mount(params: &Self::Params, session: &Session, socket: Socket<Self::AssignKeys>) -> Result<Socket<Self::AssignKeys>, Box<dyn Error>>;
+	fn handle_event(msg: Self::Msg, params: &Self::Params, socket: Socket<Self::AssignKeys>) -> Result<Socket<Self::AssignKeys>, Box<dyn Error>>;
 	fn render(state: &Assigns<Self::AssignKeys>) -> Vision;
 }
 
