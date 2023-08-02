@@ -35,8 +35,12 @@ pub trait LiveView {
 	type Msg: LiveMsg;
 	type AssignKeys: Debug + Clone + Eq + Hash + Unpin;
 
-	fn mount(params: &Self::Params, session: &Session, socket: Socket<Self::AssignKeys>) -> Result<Socket<Self::AssignKeys>, Box<dyn Error>>;
-	fn handle_event(msg: Self::Msg, params: &Self::Params, socket: Socket<Self::AssignKeys>) -> Result<Socket<Self::AssignKeys>, Box<dyn Error>>;
+	fn mount(_params: &Self::Params, _session: &Session, socket: Socket<Self::AssignKeys>) -> Result<Socket<Self::AssignKeys>, Box<dyn Error>> {
+		Ok(socket)
+	}
+	fn handle_event(_msg: Self::Msg, _params: &Self::Params, socket: Socket<Self::AssignKeys>) -> Result<Socket<Self::AssignKeys>, Box<dyn Error>> {
+		Ok(socket)
+	}
 	fn render(state: &Assigns<Self::AssignKeys>) -> Vision;
 }
 
